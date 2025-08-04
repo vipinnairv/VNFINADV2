@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Fund Allocation Tool</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Disclaimer Modal - CRITICAL FIX: Updated structure -->
+    <div id="disclaimerModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Important Disclaimers</h2>
+            </div>
+            <div class="modal-body">
+                <div class="disclaimer-section">
+                    <h3>SEBI Disclaimer</h3>
+                    <p>SEBI Registration: This material is for educational purposes only and should not be construed as investment advice. Mutual fund investments are subject to market risks. Please read all scheme-related documents carefully before investing. Past performance is not indicative of future results.</p>
+                </div>
+                <div class="disclaimer-section">
+                    <h3>Educational Purpose Statement</h3>
+                    <p>This tool is designed for educational and learning purposes only. It provides general information about investment concepts and should not be considered as personalized financial advice. Users should consult with qualified financial advisors before making investment decisions.</p>
+                </div>
+                <div class="disclaimer-section">
+                    <h3>Assumptions Disclaimer</h3>
+                    <p>The projections and calculations shown are based on certain assumptions including historical returns, market conditions, and mathematical models. These assumptions may result in different outcomes and opinions. Actual investment results may vary significantly from the projections shown. Multiple factors affect investment performance including market volatility, economic conditions, and individual fund management.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--primary">I Understand & Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <h1>Personal Finance Fund Allocation Tool</h1>
+            <p class="header__subtitle">Smart investment planning with emergency fund and comprehensive allocation</p>
+            <div class="disclaimer-banner">
+                <strong>Educational Tool:</strong> For learning purposes only. Not personalized financial advice. 
+                <button class="btn-link" onclick="showDisclaimer()">View Full Disclaimers</button>
+            </div>
+        </header>
+
+        <!-- Progress Indicator -->
+        <div class="progress-indicator">
+            <div class="progress-step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Income & Expenses</div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Emergency Fund</div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Risk Profile</div>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Fund Allocation</div>
+            </div>
+            <div class="progress-step" data-step="5">
+                <div class="step-number">5</div>
+                <div class="step-label">All Projections</div>
+            </div>
+            <div class="progress-step" data-step="6">
+                <div class="step-number">6</div>
+                <div class="step-label">Results</div>
+            </div>
+        </div>
+
+        <!-- Step 1: Income & Expense Input -->
+        <div id="step1" class="step-content active">
+            <div class="card">
+                <div class="card__body">
+                    <h2>Step 1: Income & Expense Analysis</h2>
+                    <p>Enter your monthly income and expenses to calculate available savings for investment.</p>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Monthly Income (₹)</label>
+                        <input type="number" id="monthlyIncome" class="form-control" placeholder="Enter your monthly income" min="0">
+                    </div>
+
+                    <h3>Monthly Expenses</h3>
+                    <div class="expense-categories">
+                        <div class="form-group">
+                            <label class="form-label">Housing & Utilities</label>
+                            <input type="number" id="expense-housing" class="form-control expense-input" placeholder="Rent, electricity, maintenance" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Food & Groceries</label>
+                            <input type="number" id="expense-food" class="form-control expense-input" placeholder="Food and grocery expenses" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Transportation</label>
+                            <input type="number" id="expense-transport" class="form-control expense-input" placeholder="Travel, fuel, public transport" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Healthcare</label>
+                            <input type="number" id="expense-healthcare" class="form-control expense-input" placeholder="Medical expenses" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Entertainment & Lifestyle</label>
+                            <input type="number" id="expense-entertainment" class="form-control expense-input" placeholder="Entertainment, shopping, dining" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Insurance & EMIs</label>
+                            <input type="number" id="expense-insurance" class="form-control expense-input" placeholder="Insurance premiums, loan EMIs" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Other Expenses</label>
+                            <input type="number" id="expense-other" class="form-control expense-input" placeholder="Miscellaneous expenses" min="0">
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="expense-summary">
+                        <div class="summary-row">
+                            <span>Total Monthly Expenses:</span>
+                            <span id="totalExpenses">₹0</span>
+                        </div>
+                        <div class="summary-row savings">
+                            <span>Available Savings:</span>
+                            <span id="availableSavings">₹0</span>
+                        </div>
+                    </div>
+
+                    <div class="error-message" id="step1Error"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Emergency Fund Creation -->
+        <div id="step2" class="step-content">
+            <div class="card">
+                <div class="card__body">
+                    <h2>Step 2: Emergency Fund Creation</h2>
+                    <p>Build a safety net before investing. Financial experts recommend 6-9 months of essential expenses.</p>
+                    
+                    <div class="emergency-fund-grid">
+                        <div class="emergency-inputs">
+                            <div class="form-group">
+                                <label class="form-label">Monthly Essential Expenses (₹)</label>
+                                <input type="number" id="essentialExpenses" class="form-control" placeholder="Housing, food, utilities only" min="0">
+                                <small>Include only necessary expenses: rent, food, utilities, loan EMIs</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Months of Coverage Desired</label>
+                                <select id="emergencyMonths" class="form-control">
+                                    <option value="3">3 months (Minimum)</option>
+                                    <option value="6" selected>6 months (Recommended)</option>
+                                    <option value="9">9 months (Conservative)</option>
+                                    <option value="12">12 months (Maximum Security)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Current Emergency Fund (₹)</label>
+                                <input type="number" id="currentEmergencyFund" class="form-control" placeholder="Current emergency savings" min="0" value="0">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Time Frame to Build Fund (Months)</label>
+                                <select id="buildTimeFrame" class="form-control">
+                                    <option value="6">6 months</option>
+                                    <option value="12" selected>12 months</option>
+                                    <option value="18">18 months</option>
+                                    <option value="24">24 months</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="emergency-summary">
+                            <div class="emergency-calculation">
+                                <h3>Emergency Fund Goal</h3>
+                                <div class="goal-item">
+                                    <span>Target Amount:</span>
+                                    <span id="emergencyTarget">₹0</span>
+                                </div>
+                                <div class="goal-item">
+                                    <span>Amount Needed:</span>
+                                    <span id="emergencyNeeded">₹0</span>
+                                </div>
+                                <div class="goal-item highlight">
+                                    <span>Monthly Contribution Required:</span>
+                                    <span id="emergencyMonthlyRequired">₹0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="emergency-options">
+                        <h3>Emergency Fund Investment Options</h3>
+                        <div class="fund-options-grid">
+                            <div class="option-card selected" data-option="savings">
+                                <h4>High-Yield Savings Account</h4>
+                                <div class="option-details">
+                                    <p><strong>Returns:</strong> 4-5% annually</p>
+                                    <p><strong>Liquidity:</strong> Instant access</p>
+                                    <p><strong>Risk:</strong> Very Low</p>
+                                    <p><strong>Best For:</strong> Ultimate safety & instant access</p>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" data-option="liquid">
+                                <h4>Liquid Mutual Funds</h4>
+                                <div class="option-details">
+                                    <p><strong>Returns:</strong> 6-7% annually</p>
+                                    <p><strong>Liquidity:</strong> 1-2 business days</p>
+                                    <p><strong>Risk:</strong> Low</p>
+                                    <p><strong>Best For:</strong> Better returns with slight delay</p>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" data-option="fd">
+                                <h4>Short-Term Fixed Deposits</h4>
+                                <div class="option-details">
+                                    <p><strong>Returns:</strong> 6-8% annually</p>
+                                    <p><strong>Liquidity:</strong> Penalty on early withdrawal</p>
+                                    <p><strong>Risk:</strong> Very Low</p>
+                                    <p><strong>Best For:</strong> Higher returns if no early access needed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="emergency-progress">
+                        <h3>Progress Tracking</h3>
+                        <div class="progress-chart-container" style="position: relative; height: 200px;">
+                            <canvas id="emergencyProgressChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="error-message" id="step2Error"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Risk Profile Assessment -->
+        <div id="step3" class="step-content">
+            <div class="card">
+                <div class="card__body">
+                    <h2>Step 3: Risk Profile Assessment</h2>
+                    <p>Answer these questions to determine your investment risk profile.</p>
+                    
+                    <div id="riskQuestions" class="risk-questions">
+                        <!-- Questions will be populated by JavaScript -->
+                    </div>
+
+                    <div class="risk-score-display">
+                        <div class="score-info">
+                            <span>Your Risk Score: </span>
+                            <span id="riskScore">0</span>
+                            <span>/30</span>
+                        </div>
+                        <div class="risk-profile">
+                            <span>Risk Profile: </span>
+                            <span id="riskProfile">-</span>
+                        </div>
+                    </div>
+
+                    <div class="error-message" id="step3Error"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Fund Allocation -->
+        <div id="step4" class="step-content">
+            <div class="card">
+                <div class="card__body">
+                    <h2>Step 4: Fund Allocation</h2>
+                    <p id="allocationDescription">Customize your portfolio allocation based on recommendations:</p>
+                    
+                    <div class="allocation-container">
+                        <div class="chart-section">
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas id="allocationChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="allocation-controls">
+                            <h3>Customize Your Allocation</h3>
+                            <div id="allocationSliders" class="allocation-sliders">
+                                <!-- Sliders will be populated by JavaScript -->
+                            </div>
+                            <div class="total-allocation">
+                                Total: <span id="totalAllocation">100</span>%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="investment-amount">
+                        <label class="form-label">Monthly Investment Amount (₹)</label>
+                        <input type="number" id="monthlyInvestment" class="form-control" placeholder="Enter amount to invest monthly" min="0">
+                        <small>Available after emergency fund: ₹<span id="availableForInvestment">0</span></small>
+                    </div>
+
+                    <div class="error-message" id="step4Error"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: All Investment Projections -->
+        <div id="step5" class="step-content">
+            <div class="card">
+                <div class="card__body">
+                    <h2>Step 5: Comprehensive Investment Projections</h2>
+                    <div class="disclaimer-note">
+                        <strong>Disclaimer:</strong> All projections are based on historical data and assumptions. Actual results may vary significantly.
+                    </div>
+                    
+                    <div class="projection-tabs">
+                        <button class="tab-btn active" onclick="showProjectionTab('portfolio')">Your Portfolio</button>
+                        <button class="tab-btn" onclick="showProjectionTab('individual')">Individual Funds</button>
+                        <button class="tab-btn" onclick="showProjectionTab('alternatives')">Alternative Investments</button>
+                        <button class="tab-btn" onclick="showProjectionTab('comparison')">All Comparisons</button>
+                    </div>
+
+                    <!-- Portfolio Projections -->
+                    <div id="portfolioProjections" class="projection-tab-content active">
+                        <h3>Your Portfolio Projections (SIP)</h3>
+                        <div class="projection-grid">
+                            <div class="projection-card">
+                                <div class="projection-period">1 Year</div>
+                                <div class="projection-value" id="portfolioProjection1Y">₹0</div>
+                                <div class="projection-details">
+                                    <small>Invested: ₹<span id="portfolioInvested1Y">0</span></small>
+                                    <small>Returns: ₹<span id="portfolioReturns1Y">0</span></small>
+                                </div>
+                            </div>
+                            <div class="projection-card">
+                                <div class="projection-period">3 Years</div>
+                                <div class="projection-value" id="portfolioProjection3Y">₹0</div>
+                                <div class="projection-details">
+                                    <small>Invested: ₹<span id="portfolioInvested3Y">0</span></small>
+                                    <small>Returns: ₹<span id="portfolioReturns3Y">0</span></small>
+                                </div>
+                            </div>
+                            <div class="projection-card">
+                                <div class="projection-period">5 Years</div>
+                                <div class="projection-value" id="portfolioProjection5Y">₹0</div>
+                                <div class="projection-details">
+                                    <small>Invested: ₹<span id="portfolioInvested5Y">0</span></small>
+                                    <small>Returns: ₹<span id="portfolioReturns5Y">0</span></small>
+                                </div>
+                            </div>
+                            <div class="projection-card">
+                                <div class="projection-period">10 Years</div>
+                                <div class="projection-value" id="portfolioProjection10Y">₹0</div>
+                                <div class="projection-details">
+                                    <small>Invested: ₹<span id="portfolioInvested10Y">0</span></small>
+                                    <small>Returns: ₹<span id="portfolioReturns10Y">0</span></small>
+                                </div>
+                            </div>
+                            <div class="projection-card">
+                                <div class="projection-period">15 Years</div>
+                                <div class="projection-value" id="portfolioProjection15Y">₹0</div>
+                                <div class="projection-details">
+                                    <small>Invested: ₹<span id="portfolioInvested15Y">0</span></small>
+                                    <small>Returns: ₹<span id="portfolioReturns15Y">0</span></small>
+                                </div>
+                            </div>
+                            <div class="projection-card">
+                                <div class="projection-period">20 Years</div>
+                                <div class="projection-value" id="portfolioProjection20Y">₹0</div>
+                                <div class="projection-details">
+                                    <small>Invested: ₹<span id="portfolioInvested20Y">0</span></small>
+                                    <small>Returns: ₹<span id="portfolioReturns20Y">0</span></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Individual Fund Projections -->
+                    <div id="individualProjections" class="projection-tab-content">
+                        <h3>Individual Fund Projections (Extended Periods)</h3>
+                        <div id="individualFundsTable" class="projections-table">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Alternative Investment Projections -->
+                    <div id="alternativeProjections" class="projection-tab-content">
+                        <h3>Alternative Investment Options</h3>
+                        <div class="alternative-investments-grid">
+                            <div class="alternative-category">
+                                <h4>Real Estate Investment Trusts (REITs)</h4>
+                                <div class="alternative-options">
+                                    <div class="alternative-item">
+                                        <h5>Embassy Office Parks REIT</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: 6.7% annually</span>
+                                            <span>Minimum Investment: ₹15,000</span>
+                                            <span>Liquidity: High | Risk: Medium</span>
+                                        </div>
+                                    </div>
+                                    <div class="alternative-item">
+                                        <h5>Mindspace Business Parks REIT</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: 6.9% annually</span>
+                                            <span>Minimum Investment: ₹15,000</span>
+                                            <span>Liquidity: High | Risk: Medium</span>
+                                        </div>
+                                    </div>
+                                    <div class="alternative-item">
+                                        <h5>Brookfield India REIT</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: 7.3% annually</span>
+                                            <span>Minimum Investment: ₹10,000</span>
+                                            <span>Liquidity: High | Risk: Medium</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alternative-category">
+                                <h4>Alternative Investment Funds (AIFs)</h4>
+                                <div class="alternative-options">
+                                    <div class="alternative-item">
+                                        <h5>Private Equity AIF (Category II)</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: 15% annually</span>
+                                            <span>Minimum Investment: ₹1 crore</span>
+                                            <span>Lock-in: 3-5 years | Risk: High</span>
+                                        </div>
+                                    </div>
+                                    <div class="alternative-item">
+                                        <h5>Venture Capital AIF (Category I)</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: 18% annually</span>
+                                            <span>Minimum Investment: ₹1 crore</span>
+                                            <span>Lock-in: 3-5 years | Risk: Very High</span>
+                                        </div>
+                                    </div>
+                                    <div class="alternative-item">
+                                        <h5>Debt AIF (Category II)</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: 12% annually</span>
+                                            <span>Minimum Investment: ₹10 lakh</span>
+                                            <span>Lock-in: 2-3 years | Risk: Medium</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alternative-category">
+                                <h4>Peer-to-Peer & Alternative Debt</h4>
+                                <div class="alternative-options">
+                                    <div class="alternative-item">
+                                        <h5>P2P Lending Platforms</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: 12% annually</span>
+                                            <span>Minimum Investment: ₹25,000</span>
+                                            <span>Liquidity: Medium | Risk: Medium-High</span>
+                                        </div>
+                                    </div>
+                                    <div class="alternative-item">
+                                        <h5>Invoice Discounting</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: 14% annually</span>
+                                            <span>Minimum Investment: ₹25,000</span>
+                                            <span>Liquidity: Medium | Risk: Medium</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alternative-category">
+                                <h4>Commodities & Gold</h4>
+                                <div class="alternative-options">
+                                    <div class="alternative-item">
+                                        <h5>Gold ETFs</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: 7% annually</span>
+                                            <span>Minimum Investment: ₹1,000</span>
+                                            <span>Liquidity: High | Risk: Medium</span>
+                                        </div>
+                                    </div>
+                                    <div class="alternative-item">
+                                        <h5>Physical Gold</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: 6-8% annually</span>
+                                            <span>Minimum Investment: ₹5,000</span>
+                                            <span>Liquidity: Medium | Risk: Medium</span>
+                                        </div>
+                                    </div>
+                                    <div class="alternative-item">
+                                        <h5>Commodity Futures</h5>
+                                        <div class="alternative-details">
+                                            <span>Expected Return: Variable</span>
+                                            <span>Minimum Investment: ₹10,000</span>
+                                            <span>Liquidity: High | Risk: Very High</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Chart -->
+                    <div id="comparisonProjections" class="projection-tab-content">
+                        <h3>Investment Comparison (10-Year SIP)</h3>
+                        <div class="chart-container" style="position: relative; height: 400px;">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="error-message" id="step5Error"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: Results & Summary -->
+        <div id="step6" class="step-content">
+            <div class="card">
+                <div class="card__body">
+                    <h2>Step 6: Investment Summary & Recommendations</h2>
+                    
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <h3>Your Profile</h3>
+                            <div class="profile-info">
+                                <div class="info-row">
+                                    <span>Risk Profile:</span>
+                                    <span id="summaryRiskProfile">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>Monthly Investment:</span>
+                                    <span id="summaryMonthlyInvestment">₹0</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>Emergency Fund Goal:</span>
+                                    <span id="summaryEmergencyFund">₹0</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>Available Savings:</span>
+                                    <span id="summaryAvailableSavings">₹0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <h3>Expected Returns</h3>
+                            <div class="returns-info">
+                                <div class="return-highlight">
+                                    <div class="return-period">5-Year Expected Value</div>
+                                    <div class="return-value" id="summaryExpectedValue">₹0</div>
+                                    <div class="return-percentage" id="summaryExpectedReturn">0% CAGR</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="investment-breakdown-section">
+                        <h3>Monthly Investment Breakdown</h3>
+                        <div id="finalInvestmentBreakdown" class="breakdown-table">
+                            <!-- Breakdown will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="recommendations-section">
+                        <h3>Personalized Recommendations</h3>
+                        <div id="finalRecommendations" class="recommendations-list">
+                            <!-- Recommendations will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn--primary export-btn" onclick="exportToExcel()">
+                            📊 Export to Excel
+                        </button>
+                        <button class="btn btn--secondary" onclick="resetApplication()">Start Over</button>
+                        <button class="btn btn--outline" onclick="saveResults()">Save Results</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button id="prevBtn" class="btn btn--outline" onclick="previousStep()">Previous</button>
+            <button id="nextBtn" class="btn btn--primary" onclick="nextStep()">Next</button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="branding-section">
+                    <h3>Designed & Conceptualized by Vipin Nair</h3>
+                    <p>Email: <a href="mailto:audit.vipin@gmail.com" target="_blank">audit.vipin@gmail.com</a></p>
+                </div>
+                <div class="footer-disclaimer">
+                    <small>This tool is for educational purposes only. Please consult with qualified financial advisors before making investment decisions.</small>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
